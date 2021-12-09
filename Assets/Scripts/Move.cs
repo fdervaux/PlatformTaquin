@@ -30,6 +30,8 @@ public class Move : MonoBehaviour
 
     private bool _isGrounded = false;
 
+    public bool is2dSideScroller = false;
+
     public void OnJump()
     {
         //add jump force to the player velocity
@@ -71,10 +73,10 @@ public class Move : MonoBehaviour
             {
                 _isGrounded = true;
                 groundCorrection = Vector3.down * (hit.distance - 0.2f);
-                MovePlatform _platform = hit.transform.GetComponent<MovePlatform>();
-                if (_platform)
+                MovePlatform platform = hit.transform.GetComponent<MovePlatform>();
+                if (platform)
                 {
-                    platformVelocity = _platform.velocity();
+                    platformVelocity = platform.velocity();
                 }
             }
         }
@@ -114,23 +116,35 @@ public class Move : MonoBehaviour
         if (_isGrounded)
         {
             _velocity.x = inputMove.x * _speed;
+            if (!is2dSideScroller)
+                _velocity.z = inputMove.y * _speed;
         }
         else
         {
             _velocity.x = Mathf.MoveTowards(_velocity.x, inputMove.x * _speed, _airControl);
+            if (!is2dSideScroller)
+                _velocity.z = Mathf.MoveTowards(_velocity.z, inputMove.y * _speed, _airControl);
         }
 
-
-        //change direction of the player according to the input
-        if (inputMove.x > EPSILON)
+        if (!is2dSideScroller)
         {
-            transform.rotation = Quaternion.Euler(0, 0, 0);
+            if (inputMove.magnitude > EPSILON)
+            {
+                float angle = Vector2.SignedAngle(new Vector2(1, 0), inputMove);
+                transform.rotation = Quaternion.Euler(0, -angle, 0);
+            }
         }
-        else if (inputMove.x < -EPSILON)
+        else
         {
-            transform.rotation = Quaternion.Euler(0, 180, 0);
+            if (inputMove.x > EPSILON)
+            {
+                transform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+            else if (inputMove.x < -EPSILON)
+            {
+                transform.rotation = Quaternion.Euler(0, 180, 0);
+            }
         }
-
 
         //mover character for better physics
         _characterController.Move((_velocity + platformVelocity) * Time.fixedDeltaTime + groundCorrection);
