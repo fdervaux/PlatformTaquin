@@ -47,8 +47,8 @@ public class Move : MonoBehaviour
         _characterController = GetComponent<CharacterController>();
         _PlayerInput = GetComponent<PlayerInput>();
 
-        _moveAction = _PlayerInput.actions.FindAction("Move");
-        _JumpAcion = _PlayerInput.actions.FindAction("Jump");
+        _moveAction = _PlayerInput.actions.FindAction("Move", true);
+        _JumpAcion = _PlayerInput.actions.FindAction("Jump", true);
     }
 
     // Update is called once per frame
@@ -63,6 +63,8 @@ public class Move : MonoBehaviour
         //check the floor under the player
         Vector3 platformVelocity = Vector3.zero;
         Vector3 groundCorrection = Vector3.zero;
+
+        
 
         _isGrounded = false;
 
