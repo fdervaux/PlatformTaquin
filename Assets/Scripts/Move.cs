@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 public class Move : MonoBehaviour
 {
 
-    private CharacterController _characterController = null;
+    //private CharacterController _characterController = null;
     private PlayerInput _PlayerInput = null;
 
     private InputAction _moveAction = null;
@@ -22,15 +22,27 @@ public class Move : MonoBehaviour
 
     [Range(0, 1)] public float _airControl = 0.05f;
 
-    public float gravityFactorJumpUp = 1;
+    public float _gravityFactorJumpUp = 1;
 
-    public float gravityFactorJumpDown = 1.4f;
+    public float _gravityFactorJumpDown = 1.4f;
 
-    public float gravityFactorCancelJump = 1.6f;
+    public float _gravityFactorCancelJump = 1.6f;
 
     private bool _isGrounded = false;
 
-    public bool is2dSideScroller = false;
+    public bool _is2dSideScroller = false;
+
+    private Vector3 _groundVelocity = Vector3.zero;
+
+    public float _groundCheckDistance = 0.4f;
+
+    public float _groundCheckOffset = 1.0f;
+
+    public MoveToTarget _moveToTarget = null;
+
+    private Rigidbody _rigidBody;
+
+
 
     public void OnJump()
     {
@@ -44,41 +56,52 @@ public class Move : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _characterController = GetComponent<CharacterController>();
+        //_characterController = GetComponent<CharacterController>();
+        _rigidBody = GetComponent<Rigidbody>();
         _PlayerInput = GetComponent<PlayerInput>();
 
         _moveAction = _PlayerInput.actions.FindAction("Move", true);
         _JumpAcion = _PlayerInput.actions.FindAction("Jump", true);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     private void FixedUpdate()
     {
 
         //check the floor under the player
-        Vector3 platformVelocity = Vector3.zero;
+
+        Vector3 groundCheckCorrection = Vector3.zero;
+        if (_moveToTarget != null)
+        {
+            groundCheckCorrection = _moveToTarget.velocity() * Time.fixedDeltaTime;
+            _rigidBody.position = _rigidBody.position + groundCheckCorrection;
+        }
+
+
+        _groundVelocity = Vector3.zero;
         Vector3 groundCorrection = Vector3.zero;
-
-        
-
         _isGrounded = false;
+        _moveToTarget = null;
 
         if (_velocity.y < EPSILON)
         {
             RaycastHit hit;
-            if (Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, out hit, 0.5f))
+            if (Physics.Raycast(_rigidBody.position + Vector3.up * _groundCheckOffset, Vector3.down, out hit, _groundCheckDistance + _groundCheckOffset ))
             {
                 _isGrounded = true;
-                groundCorrection = Vector3.down * (hit.distance - 0.2f);
+                groundCorrection = Vector3.down * (hit.distance - _groundCheckOffset);
                 MovePlatform platform = hit.transform.GetComponent<MovePlatform>();
                 if (platform)
                 {
-                    platformVelocity = platform.velocity();
+                    _groundVelocity = platform.velocity();
+                }
+
+                MoveToTarget moveToTarget = hit.transform.GetComponent<MoveToTarget>();
+                if (moveToTarget)
+                {
+                    _moveToTarget = moveToTarget;
+                    _groundVelocity = moveToTarget.velocity();
+                    Debug.Log("detectMovingToTarget");
                 }
             }
         }
@@ -92,15 +115,15 @@ public class Move : MonoBehaviour
 
         if (_velocity.y < 0)
         {
-            gravityFactor = gravityFactorJumpDown;
+            gravityFactor = _gravityFactorJumpDown;
         }
         else if (inputJump > 0.5f)
         {
-            gravityFactor = gravityFactorJumpUp;
+            gravityFactor = _gravityFactorJumpUp;
         }
         else
         {
-            gravityFactor = gravityFactorCancelJump;
+            gravityFactor = _gravityFactorCancelJump;
         }
 
 
@@ -118,17 +141,17 @@ public class Move : MonoBehaviour
         if (_isGrounded)
         {
             _velocity.x = inputMove.x * _speed;
-            if (!is2dSideScroller)
+            if (!_is2dSideScroller)
                 _velocity.z = inputMove.y * _speed;
         }
         else
         {
             _velocity.x = Mathf.MoveTowards(_velocity.x, inputMove.x * _speed, _airControl);
-            if (!is2dSideScroller)
+            if (!_is2dSideScroller)
                 _velocity.z = Mathf.MoveTowards(_velocity.z, inputMove.y * _speed, _airControl);
         }
 
-        if (!is2dSideScroller)
+        if (!_is2dSideScroller)
         {
             if (inputMove.magnitude > EPSILON)
             {
@@ -148,7 +171,9 @@ public class Move : MonoBehaviour
             }
         }
 
+
+        
         //mover character for better physics
-        _characterController.Move((_velocity + platformVelocity) * Time.fixedDeltaTime + groundCorrection);
+        _rigidBody.position = _rigidBody.position + _velocity * Time.fixedDeltaTime + groundCorrection;
     }
 }

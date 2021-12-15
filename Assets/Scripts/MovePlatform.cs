@@ -13,8 +13,6 @@ public class MovePlatform : MonoBehaviour
     private Rigidbody _rigidbody;
     private Vector3 _velocity = Vector3.zero;
 
-
-
     public Vector3 velocity()
     {
         return _velocity;
@@ -35,7 +33,7 @@ public class MovePlatform : MonoBehaviour
         Vector3 oldPosition = _rigidbody.position;
 
         //move platform to target
-        _rigidbody.position = Vector3.MoveTowards(transform.position, _currentTarget, _speed*Time.deltaTime);
+        _rigidbody.position = Vector3.MoveTowards(transform.position, _currentTarget, _speed*Time.fixedDeltaTime);
         _velocity = (_rigidbody.position - oldPosition) / Time.fixedDeltaTime;
 
 
