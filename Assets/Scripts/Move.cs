@@ -89,6 +89,7 @@ public class Move : MonoBehaviour
         _isGrounded = false;
         _groundVelocity = Vector3.zero;
         _moveToTarget = null;
+        _movePlatform = null;
         
 
         if (!startJump && _velocity.y < EPSILON )
