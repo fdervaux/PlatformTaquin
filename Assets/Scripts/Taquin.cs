@@ -22,7 +22,7 @@ public class Taquin : MonoBehaviour
 
     public void OnClick(InputValue value)
     {
-        //if (currentMoveToTarget == null || currentMoveToTarget.isReachedTarget())
+        if (currentMoveToTarget == null || currentMoveToTarget.isReachedTarget())
         {
             Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
             RaycastHit hit;
@@ -38,7 +38,7 @@ public class Taquin : MonoBehaviour
                         if (objectToMove == _grid[i, j])
                         {
                             tryMove(i, j);
-                            //Debug.Log(i + " , " + j);
+                            Debug.Log(i + " , " + j);
                             return;
                         }
                     }
@@ -54,15 +54,15 @@ public class Taquin : MonoBehaviour
         {
             move(i, j, i - 1, j);
         }
-        if (i < 2 && _grid[i + 1, j] == null)
+        else if (i < 2 && _grid[i + 1, j] == null)
         {
             move(i, j, i + 1, j);
         }
-        if (j > 0 && _grid[i, j - 1] == null)
+        else if (j > 0 && _grid[i, j - 1] == null)
         {
             move(i, j, i, j - 1);
         }
-        if (j < 2 && _grid[i, j + 1] == null)
+        else if (j < 2 && _grid[i, j + 1] == null)
         {
             move(i, j, i, j + 1);
         }
@@ -73,6 +73,8 @@ public class Taquin : MonoBehaviour
     {
         _grid[newI, newJ] = _grid[i, j];
         _grid[i, j] = null;
+
+        //_grid[newI,newJ].transform.position = getPosition(newI,newJ);
 
         currentMoveToTarget = _grid[newI, newJ].GetComponent<MoveToTarget>();
 

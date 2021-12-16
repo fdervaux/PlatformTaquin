@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MoveToTarget : MonoBehaviour
 {
-    public float _speed;
+    public float _speedMax;
 
     private Vector3 _currentTarget;
     private Rigidbody _rigidbody;
@@ -46,7 +46,7 @@ public class MoveToTarget : MonoBehaviour
 
             Vector3 velocityDirection = (_currentTarget-transform.position).normalized;
 
-            Vector3 velocityMax = Vector3.MoveTowards(_velocity, velocityDirection * _speed, _acc*Time.fixedDeltaTime);
+            Vector3 velocityMax = Vector3.MoveTowards(_velocity, velocityDirection * _speedMax, _acc*Time.fixedDeltaTime);
 
             _rigidbody.position = Vector3.MoveTowards(transform.position, _currentTarget, velocityMax.magnitude * Time.fixedDeltaTime);
 

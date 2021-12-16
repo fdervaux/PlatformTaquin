@@ -76,14 +76,15 @@ public class Move : MonoBehaviour
         if (_moveToTarget != null)
         {
             groundCheckCorrection = _moveToTarget.velocity() * Time.fixedDeltaTime;
-            _rigidBody.position = _rigidBody.position + groundCheckCorrection;
+            _rigidBody.MovePosition( _rigidBody.position + groundCheckCorrection);
         }
 
         if (_movePlatform != null)
         {
             groundCheckCorrection = _movePlatform.velocity() * Time.fixedDeltaTime;
-            _rigidBody.position = _rigidBody.position + groundCheckCorrection;
+            _rigidBody.MovePosition( _rigidBody.position + groundCheckCorrection);
         }
+        
 
         Vector3 groundCorrection = Vector3.zero;
         _isGrounded = false;
@@ -149,14 +150,12 @@ public class Move : MonoBehaviour
         // apply horizontal move to the player accorrding to the inputs
         if (_isGrounded)
         {
-            Debug.Log( "ground constraint");
             _velocity.x = inputMove.x * _speed;
             if (!_is2dSideScroller)
                 _velocity.z = inputMove.y * _speed;
         }
         else
         {
-            Debug.Log("air control");
             _velocity.x = Mathf.MoveTowards(_velocity.x, inputMove.x * _speed, _airControl);
             if (!_is2dSideScroller)
                 _velocity.z = Mathf.MoveTowards(_velocity.z, inputMove.y * _speed, _airControl);
@@ -185,6 +184,8 @@ public class Move : MonoBehaviour
         startJump = false;
         
         //mover character for better physics
-        _rigidBody.position = _rigidBody.position + _velocity * Time.fixedDeltaTime + groundCorrection;
+        _rigidBody.velocity = Vector3.zero;
+        _rigidBody.MovePosition(_rigidBody.position + _velocity * Time.fixedDeltaTime + groundCorrection);
+        
     }
 }
