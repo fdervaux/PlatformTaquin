@@ -8,7 +8,7 @@ public class Taquin : MonoBehaviour
 
     public List<GameObject> _gameobjects;
 
-    public GameObject[,] _grid = new GameObject[4, 4];
+    public GameObject[,] _grid = new GameObject[3, 3];
 
     public float ElementSize = 20;
 
@@ -22,14 +22,14 @@ public class Taquin : MonoBehaviour
 
     public void OnClick(InputValue value)
     {
-        if (currentMoveToTarget == null || currentMoveToTarget.isReachedTarget())
+        //if (currentMoveToTarget == null || currentMoveToTarget.isReachedTarget())
         {
-            var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
                 GameObject objectToMove = hit.transform.gameObject;
-
+                Debug.Log(objectToMove);
 
                 for (int i = 0; i < 3; i++)
                 {
@@ -38,7 +38,7 @@ public class Taquin : MonoBehaviour
                         if (objectToMove == _grid[i, j])
                         {
                             tryMove(i, j);
-                            Debug.Log(i + " , " + j);
+                            //Debug.Log(i + " , " + j);
                             return;
                         }
                     }

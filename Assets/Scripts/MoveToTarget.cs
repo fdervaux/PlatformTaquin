@@ -7,12 +7,9 @@ public class MoveToTarget : MonoBehaviour
     public float _speed;
 
     private Vector3 _currentTarget;
-    private bool isInverseWay = false;
     private Rigidbody _rigidbody;
     private Vector3 _velocity = Vector3.zero;
-
     public float _acc = 1f;
-
     private bool reachedTarget = true;
 
     public bool isReachedTarget()
@@ -44,15 +41,10 @@ public class MoveToTarget : MonoBehaviour
     {
         if (!reachedTarget)
         {
-            Debug.Log(_velocity);
-
+            
             Vector3 oldPosition = _rigidbody.position;
 
             Vector3 velocityDirection = (_currentTarget-transform.position).normalized;
-
-            float currentSpeed = _velocity.magnitude;
-
-            currentSpeed = Mathf.Min( currentSpeed + _acc * Time.deltaTime , _speed);
 
             Vector3 velocityMax = Vector3.MoveTowards(_velocity, velocityDirection * _speed, _acc*Time.fixedDeltaTime);
 

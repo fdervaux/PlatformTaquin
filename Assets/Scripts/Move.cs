@@ -39,8 +39,11 @@ public class Move : MonoBehaviour
     public float _groundCheckOffset = 1.0f;
 
     public MoveToTarget _moveToTarget = null;
+    public MovePlatform _movePlatform = null;
 
     private Rigidbody _rigidBody;
+
+    private bool startJump = false;
 
 
 
@@ -49,7 +52,8 @@ public class Move : MonoBehaviour
         //add jump force to the player velocity
         if (_isGrounded)
         {
-            _velocity.y += _jumpForce;
+            _velocity += _jumpForce * Vector3.up + _groundVelocity;
+            startJump = true;
         }
     }
 
@@ -67,9 +71,7 @@ public class Move : MonoBehaviour
 
     private void FixedUpdate()
     {
-
         //check the floor under the player
-
         Vector3 groundCheckCorrection = Vector3.zero;
         if (_moveToTarget != null)
         {
@@ -77,16 +79,22 @@ public class Move : MonoBehaviour
             _rigidBody.position = _rigidBody.position + groundCheckCorrection;
         }
 
+        if (_movePlatform != null)
+        {
+            groundCheckCorrection = _movePlatform.velocity() * Time.fixedDeltaTime;
+            _rigidBody.position = _rigidBody.position + groundCheckCorrection;
+        }
 
-        _groundVelocity = Vector3.zero;
         Vector3 groundCorrection = Vector3.zero;
         _isGrounded = false;
+        _groundVelocity = Vector3.zero;
         _moveToTarget = null;
+        
 
-        if (_velocity.y < EPSILON)
+        if (!startJump && _velocity.y < EPSILON )
         {
             RaycastHit hit;
-            if (Physics.Raycast(_rigidBody.position + Vector3.up * _groundCheckOffset, Vector3.down, out hit, _groundCheckDistance + _groundCheckOffset ))
+            if (Physics.Raycast(_rigidBody.position + Vector3.up * _groundCheckOffset, Vector3.down, out hit, _groundCheckDistance + _groundCheckOffset, Physics.AllLayers, QueryTriggerInteraction.Ignore ))
             {
                 _isGrounded = true;
                 groundCorrection = Vector3.down * (hit.distance - _groundCheckOffset);
@@ -94,6 +102,7 @@ public class Move : MonoBehaviour
                 if (platform)
                 {
                     _groundVelocity = platform.velocity();
+                    _movePlatform = platform;
                 }
 
                 MoveToTarget moveToTarget = hit.transform.GetComponent<MoveToTarget>();
@@ -101,11 +110,10 @@ public class Move : MonoBehaviour
                 {
                     _moveToTarget = moveToTarget;
                     _groundVelocity = moveToTarget.velocity();
-                    Debug.Log("detectMovingToTarget");
                 }
             }
         }
-
+    
         //Retrieve player input
         Vector2 inputMove = _moveAction.ReadValue<Vector2>();
         float inputJump = _JumpAcion.ReadValue<float>();
@@ -140,12 +148,14 @@ public class Move : MonoBehaviour
         // apply horizontal move to the player accorrding to the inputs
         if (_isGrounded)
         {
+            Debug.Log( "ground constraint");
             _velocity.x = inputMove.x * _speed;
             if (!_is2dSideScroller)
                 _velocity.z = inputMove.y * _speed;
         }
         else
         {
+            Debug.Log("air control");
             _velocity.x = Mathf.MoveTowards(_velocity.x, inputMove.x * _speed, _airControl);
             if (!_is2dSideScroller)
                 _velocity.z = Mathf.MoveTowards(_velocity.z, inputMove.y * _speed, _airControl);
@@ -171,7 +181,7 @@ public class Move : MonoBehaviour
             }
         }
 
-
+        startJump = false;
         
         //mover character for better physics
         _rigidBody.position = _rigidBody.position + _velocity * Time.fixedDeltaTime + groundCorrection;
